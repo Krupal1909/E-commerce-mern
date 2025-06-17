@@ -162,7 +162,37 @@ const DeleteProduct = async (req, res) => {
     });
   }
 };
+const searchProducts = async (req, res) => {
+  try {
+    const { q } = req.query;
+    
+    if (!q) {
+      return res.status(400).json({
+        success: false,
+        message: "Search query is required"
+      });
+    }
 
+    const products = await Product.find({
+      $or: [
+        { name: { $regex: q, $options: 'i' } },
+        { description: { $regex: q, $options: 'i' } },
+        { 'category.name': { $regex: q, $options: 'i' } }
+      ]
+    }).populate('category');
+
+    res.status(200).json({
+      success: true,
+      products
+    });
+  } catch (error) {
+    console.error("Search error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
+  }
+};
 const getAllRelatedProducts = async (req, res) => {
   try {
     const { categoryId } = req.params;
