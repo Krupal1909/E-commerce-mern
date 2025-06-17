@@ -51,23 +51,30 @@ const getCategoryById = async (req, res) => {
     });
   }
 };
+
+
 const createCategory = async (req, res) => {
   try {
-    const { name, description, image, rating, price, discountedPrice } =
-      req.body;
-    if (
-      !name ||
-      !description ||
-      !image ||
-      !rating ||
-      !price ||
-      !discountedPrice
-    ) {
+    const { name, description, rating, price, discountedPrice } = req.body;
+    
+    if (!req.file) {
       return res.status(400).json({
         success: false,
-        message: "Please fill all fields",
+        message: "Image is required",
       });
     }
+
+    // Create full URL for the image
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const image = `${baseUrl}/uploads/${req.file.filename}`;
+
+    if (!name || !description || !rating || !price || !discountedPrice) {
+      return res.status(400).json({
+        success: false,
+        message: "Please fill all required fields",
+      });
+    }
+
     const existingCategory = await CategoryModel.findOne({ name });
     if (existingCategory) {
       return res.status(400).json({
@@ -75,34 +82,30 @@ const createCategory = async (req, res) => {
         message: "Category already exists",
       });
     }
+
     const category = await CategoryModel.create({
       name,
       description,
       image,
-      rating,
-      price,
-      discountedPrice,
+      rating: Number(rating),
+      price: Number(price),
+      discountedPrice: Number(discountedPrice),
     });
-    if (category) {
-      return res.status(201).json({
-        success: true,
-        message: "Category created successfully",
-        category,
-      });
-    } else {
-      return res.status(500).json({
-        success: false,
-        message: "Failed to create category",
-      });
-    }
+
+    return res.status(201).json({
+      success: true,
+      message: "Category created successfully",
+      category,
+    });
   } catch (error) {
     console.error("Category Creation Error:", error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Server Error",
     });
   }
 };
+
 
 const deleteCategory = async (req, res) => {
   try {

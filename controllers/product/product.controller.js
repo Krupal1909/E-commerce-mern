@@ -55,8 +55,16 @@ const GetProductById = async (req, res) => {
 
 const CreateProduct = async (req, res) => {
   try {
-    const { name, description, image, rating, price, discountedPrice, categoryId } = req.body;
-    if (!name || !description || !image || !rating || !price || !discountedPrice || !categoryId) {
+    const { name, description, rating, price, discountedPrice, categoryId } = req.body;
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Image is required",
+      });
+    }
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const image = `${baseUrl}/uploads/${req.file.filename}`;
+    if (!name || !description || !rating || !price || !discountedPrice || !categoryId) {
       return res.status(400).json({
         success: false,
         message: "Please fill all fields",
