@@ -1,5 +1,6 @@
 const Product = require("../../models/product.model");
-
+const Category = require("../../models/category.model");
+const mongoose = require("mongoose");
 const GetAllProducts = async (req, res) => {
   try {
     const products = await Product.find().populate("categoryId");
@@ -55,16 +56,24 @@ const GetProductById = async (req, res) => {
 
 const CreateProduct = async (req, res) => {
   try {
-    const { name, description, rating, price, discountedPrice, categoryId } = req.body;
+    const { name, description, rating, price, discountedPrice, categoryId } =
+      req.body;
     if (!req.file) {
       return res.status(400).json({
         success: false,
         message: "Image is required",
       });
     }
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
     const image = `${baseUrl}/uploads/${req.file.filename}`;
-    if (!name || !description || !rating || !price || !discountedPrice || !categoryId) {
+    if (
+      !name ||
+      !description ||
+      !rating ||
+      !price ||
+      !discountedPrice ||
+      !categoryId
+    ) {
       return res.status(400).json({
         success: false,
         message: "Please fill all fields",
@@ -77,7 +86,7 @@ const CreateProduct = async (req, res) => {
       rating,
       price,
       discountedPrice,
-      categoryId
+      categoryId,
     });
     res.status(201).json({
       success: true,
@@ -102,7 +111,9 @@ const UpdateProduct = async (req, res) => {
         message: "Product ID is required",
       });
     }
-    const updatedProduct = await Product.findByIdAndUpdate(id, req.body, { new: true });
+    const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
     if (!updatedProduct) {
       return res.status(404).json({
         success: false,
@@ -161,7 +172,9 @@ const getAllRelatedProducts = async (req, res) => {
         message: "Category ID is required",
       });
     }
-    const relatedProducts = await Product.find({ categoryId }).populate("categoryId");
+    const relatedProducts = await Product.find({ categoryId }).populate(
+      "categoryId"
+    );
     if (relatedProducts.length === 0) {
       return res.status(404).json({
         success: false,
@@ -173,15 +186,41 @@ const getAllRelatedProducts = async (req, res) => {
       message: "Related products fetched successfully",
       products: relatedProducts,
     });
-  }
-  catch (error) {
+  } catch (error) {
     console.log("Related Products Fetch Error:", error);
     res.status(500).json({
       success: false,
       message: "Server Error",
     });
-  } 
-}
+  }
+};
+
+const getProductsByCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+      return res.status(400).json({ success: false, message: "Invalid category ID format" });
+    }
+
+    // Optional: check if category exists
+    const categoryExists = await Category.findById(categoryId);
+    if (!categoryExists) {
+      return res.status(404).json({ success: false, message: "Category not found" });
+    }
+
+    const products = await Product.find({ categoryId: categoryId }).populate("categoryId");
+
+    res.status(200).json({
+      success: true,
+      message: "Products fetched successfully",
+      products,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
 
 module.exports = {
   GetAllProducts,
@@ -189,5 +228,6 @@ module.exports = {
   CreateProduct,
   UpdateProduct,
   DeleteProduct,
-  getAllRelatedProducts
+  getAllRelatedProducts,
+  getProductsByCategory,
 };

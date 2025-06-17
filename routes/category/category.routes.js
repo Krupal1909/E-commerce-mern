@@ -8,5 +8,5 @@ Router.get('/get-category', category.getAllCategory);
 Router.get('/get-category/:id', category.getCategoryById);
 Router.put('/update-category/:id', category.updateCategory);          
 Router.delete('/delete-category/:id', category.deleteCategory);
-
+Router.get('/get-category-by-name/:name', category.getCategoryByName);
 module.exports = Router;

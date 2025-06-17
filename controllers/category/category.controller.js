@@ -187,10 +187,45 @@ const updateCategory = async (req, res) => {
   }
 };
 
+const getCategoryByName = async (req, res) => {
+  try {
+    const { name } = req.params;
+    if (!name) {
+      return res.status(400).json({
+        success: false,
+        message: "Category name is required",
+      });
+    }
+    const category = await CategoryModel.findOne({ 
+      name: { $regex: new RegExp(name, 'i') } 
+    });
+
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Category fetched successfully",
+      category,
+    });
+  } catch (error) {
+    console.error("Category Fetch Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
 module.exports = {
   getAllCategory,
   createCategory,
   deleteCategory,
   updateCategory,
-  getCategoryById
+  getCategoryById,
+  getCategoryByName
 };
