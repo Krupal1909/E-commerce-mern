@@ -1,8 +1,10 @@
 const express = require('express');
 const Router = express.Router();
+const {upload} = require('../../middleware/uploads');
+
 const product = require('../../controllers/product/product.controller');
 
-Router.post('/create-product', product.CreateProduct);
+Router.post('/create-product',upload.single("image"), product.CreateProduct);
 Router.get('/get-product', product.GetAllProducts);
 Router.get('/get-product/:id', product.GetProductById);
 Router.put('/update-product/:id', product.UpdateProduct);
