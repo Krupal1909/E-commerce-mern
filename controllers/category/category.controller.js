@@ -56,7 +56,7 @@ const getCategoryById = async (req, res) => {
 const createCategory = async (req, res) => {
   try {
     const { name, description, rating, price, discountedPrice } = req.body;
-    
+
     if (!req.file) {
       return res.status(400).json({
         success: false,
@@ -64,9 +64,7 @@ const createCategory = async (req, res) => {
       });
     }
 
-    // Create full URL for the image
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
-    const image = `${baseUrl}/uploads/${req.file.filename}`;
+    const image = req.file.path; // Cloudinary URL
 
     if (!name || !description || !rating || !price || !discountedPrice) {
       return res.status(400).json({

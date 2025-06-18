@@ -56,29 +56,24 @@ const GetProductById = async (req, res) => {
 
 const CreateProduct = async (req, res) => {
   try {
-    const { name, description, rating, price, discountedPrice, categoryId } =
-      req.body;
+    const { name, description, rating, price, discountedPrice, categoryId } = req.body;
+
     if (!req.file) {
       return res.status(400).json({
         success: false,
         message: "Image is required",
       });
     }
-    const baseUrl = `${req.protocol}://${req.get("host")}`;
-    const image = `${baseUrl}/uploads/${req.file.filename}`;
-    if (
-      !name ||
-      !description ||
-      !rating ||
-      !price ||
-      !discountedPrice ||
-      !categoryId
-    ) {
+
+    const image = req.file.path; // Cloudinary URL
+
+    if (!name || !description || !rating || !price || !discountedPrice || !categoryId) {
       return res.status(400).json({
         success: false,
         message: "Please fill all fields",
       });
     }
+
     const newProduct = await Product.create({
       name,
       description,
@@ -88,6 +83,7 @@ const CreateProduct = async (req, res) => {
       discountedPrice,
       categoryId,
     });
+
     res.status(201).json({
       success: true,
       message: "Product created successfully",
@@ -101,6 +97,7 @@ const CreateProduct = async (req, res) => {
     });
   }
 };
+
 
 const UpdateProduct = async (req, res) => {
   try {
